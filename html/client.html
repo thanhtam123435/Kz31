@@ -5,26 +5,21 @@
   <title>CMD - Gửi vị trí</title>
   <style>
     body {
-      background-color: #111;
+      background: #000;
       color: #0f0;
       font-family: monospace;
       padding: 20px;
     }
-
     input {
-      background-color: #111;
+      width: 100%;
+      font-size: 16px;
+      background: #000;
       color: #0f0;
       border: none;
       border-bottom: 1px solid #0f0;
-      width: 100%;
-      font-size: 16px;
-      padding: 5px;
       outline: none;
     }
-
-    .output {
-      margin-top: 10px;
-    }
+    .output { margin-top: 10px; }
   </style>
 </head>
 <body>
@@ -43,34 +38,31 @@
         cmdInput.value = "";
 
         if (command === "tôi muốn show vị trí bản thân") {
-          if ("geolocation" in navigator) {
+          if (navigator.geolocation) {
             outputArea.innerHTML += "<div>Đang lấy vị trí...</div>";
 
-            navigator.geolocation.getCurrentPosition(
-              (position) => {
-                const lat = position.coords.latitude;
-                const lon = position.coords.longitude;
+            navigator.geolocation.getCurrentPosition((pos) => {
+              const lat = pos.coords.latitude;
+              const lon = pos.coords.longitude;
 
-                outputArea.innerHTML += `<div>Vị trí: (${lat}, ${lon})</div>`;
-                
-                // Gửi vị trí sang localStorage
-                const data = {
-                  latitude: lat,
-                  longitude: lon,
-                  timestamp: new Date().toISOString()
-                };
-
-                localStorage.setItem("userLocation", JSON.stringify(data));
-
-                // Điều hướng sang admin.html để chủ quản xem
-                window.location.href = "admin.html";
-              },
-              (error) => {
-                outputArea.innerHTML += `<div>Lỗi định vị: ${error.message}</div>`;
-              }
-            );
+              fetch('/api/location', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ latitude: lat, longitude: lon })
+              })
+              .then(res => res.json())
+              .then(data => {
+                if (data.success) {
+                  outputArea.innerHTML += "<div>✅ Gửi vị trí thành công!</div>";
+                } else {
+                  outputArea.innerHTML += "<div>❌ Lỗi khi gửi vị trí.</div>";
+                }
+              });
+            }, (err) => {
+              outputArea.innerHTML += `<div>❌ Lỗi: ${err.message}</div>`;
+            });
           } else {
-            outputArea.innerHTML += "<div>Trình duyệt không hỗ trợ định vị.</div>";
+            outputArea.innerHTML += "<div>❌ Trình duyệt không hỗ trợ định vị.</div>";
           }
         } else {
           outputArea.innerHTML += "<div>Lệnh không hợp lệ.</div>";
