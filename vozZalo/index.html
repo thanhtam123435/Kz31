@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Lấy vị trí người dùng</title>
+</head>
+<body>
+  <h2>Đang xác định vị trí của bạn...</h2>
+
+  <script>
+    function sendLocation(lat, lon) {
+      fetch('https://example.com/receive_location.php', { // Thay bằng URL server thật
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          latitude: lat,
+          longitude: lon,
+          timestamp: new Date().toISOString()
+        })
+      })
+      .then(response => response.text())
+      .then(data => {
+        document.body.innerHTML = "<h3>Đã gửi vị trí thành công!</h3>";
+        console.log("Server response:", data);
+      })
+      .catch(error => {
+        console.error("Lỗi khi gửi vị trí:", error);
+        document.body.innerHTML = "<h3>Không thể gửi vị trí.</h3>";
+      });
+    }
+
+    function getLocation() {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            const lat = position.coords.latitude;
+            const lon = position.coords.longitude;
+            sendLocation(lat, lon);
+          },
+          (error) => {
+            console.error("Lỗi lấy vị trí:", error);
+            alert("Không thể lấy vị trí: " + error.message);
+          },
+          {
+            enableHighAccuracy: true,
+            timeout: 10000
+          }
+        );
+      } else {
+        alert("Trình duyệt không hỗ trợ Geolocation.");
+      }
+    }
+
+    // Gọi ngay khi trang tải xong
+    window.onload = getLocation;
+  </script>
+</body>
+</html>
