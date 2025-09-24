@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>CMD - Gửi vị trí</title>
+  <style>
+    body {
+      background-color: #111;
+      color: #0f0;
+      font-family: monospace;
+      padding: 20px;
+    }
+
+    input {
+      background-color: #111;
+      color: #0f0;
+      border: none;
+      border-bottom: 1px solid #0f0;
+      width: 100%;
+      font-size: 16px;
+      padding: 5px;
+      outline: none;
+    }
+
+    .output {
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div>> Nhập lệnh:</div>
+  <input type="text" id="cmdInput" placeholder="VD: tôi muốn show vị trí bản thân">
+  <div class="output" id="outputArea"></div>
+
+  <script>
+    const cmdInput = document.getElementById("cmdInput");
+    const outputArea = document.getElementById("outputArea");
+
+    cmdInput.addEventListener("keydown", function (e) {
+      if (e.key === "Enter") {
+        const command = cmdInput.value.trim().toLowerCase();
+        outputArea.innerHTML += `<div>> ${command}</div>`;
+        cmdInput.value = "";
+
+        if (command === "tôi muốn show vị trí bản thân") {
+          if ("geolocation" in navigator) {
+            outputArea.innerHTML += "<div>Đang lấy vị trí...</div>";
+
+            navigator.geolocation.getCurrentPosition(
+              (position) => {
+                const lat = position.coords.latitude;
+                const lon = position.coords.longitude;
+
+                outputArea.innerHTML += `<div>Vị trí: (${lat}, ${lon})</div>`;
+                
+                // Gửi vị trí sang localStorage
+                const data = {
+                  latitude: lat,
+                  longitude: lon,
+                  timestamp: new Date().toISOString()
+                };
+
+                localStorage.setItem("userLocation", JSON.stringify(data));
+
+                // Điều hướng sang admin.html để chủ quản xem
+                window.location.href = "admin.html";
+              },
+              (error) => {
+                outputArea.innerHTML += `<div>Lỗi định vị: ${error.message}</div>`;
+              }
+            );
+          } else {
+            outputArea.innerHTML += "<div>Trình duyệt không hỗ trợ định vị.</div>";
+          }
+        } else {
+          outputArea.innerHTML += "<div>Lệnh không hợp lệ.</div>";
+        }
+      }
+    });
+  </script>
+</body>
+</html>
